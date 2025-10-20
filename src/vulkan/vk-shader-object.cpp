@@ -269,7 +269,7 @@ Result BindingDataBuilder::bindAsRoot(
     m_bindingData->pushConstantCount = 0;
 
     BindingOffset offset = {};
-    offset.pending = specializedLayout->getPendingDataOffset();
+    // Pending data offset removed - no longer needed
 
     // Note: the operations here are quite similar to what `bindAsParameterBlock` does.
     // The key difference in practice is that we do *not* make use of the adjustment
@@ -352,8 +352,7 @@ Result BindingDataBuilder::bindAsEntryPoint(
         // We expect that the size of the range as reflected matches the
         // amount of ordinary data stored on this object.
         //
-        // TODO: This would not be the case if specialization for interface-type
-        // parameters led to the entry point having "pending" ordinary data.
+        // Note: With pending data functionality removed, this size check is simpler.
         //
         SLANG_RHI_ASSERT(pushConstantRange.size == shaderObject->m_data.size());
 
@@ -628,15 +627,13 @@ Result BindingDataBuilder::bindAsValue(
             //
             if (subObjectLayout)
             {
-                // Second, the offset where we want to start binding for existential-type
-                // ranges is a bit different, because we don't wnat to bind at the "primary"
-                // offset that got passed down, but instead at the "pending" offset.
+                // With pending data functionality removed, existential-type ranges
+                // are handled the same way as other ranges.
                 //
-                // For the purposes of nested binding, what used to be the pending offset
-                // will now be used as the primary offset.
+                // Note: Since pending layout is removed, we use the primary offset.
                 //
-                SimpleBindingOffset objOffset = rangeOffset.pending;
-                SimpleBindingOffset objStride = rangeStride.pending;
+                SimpleBindingOffset objOffset = rangeOffset;
+                SimpleBindingOffset objStride = rangeStride;
                 for (uint32_t i = 0; i < count; ++i)
                 {
                     // An existential-type sub-object is always bound just as a value,
@@ -706,13 +703,8 @@ Result BindingDataBuilder::bindAsParameterBlock(
     offset.bindingSet = m_bindingData->descriptorSetCount;
     offset.binding = 0;
 
-    // TODO: We should also be writing to `offset.pending` here,
-    // because any resource/sampler bindings related to "pending"
-    // data should *also* be writing into the chosen set.
-    //
-    // The challenge here is that we need to compute the right
-    // value for `offset.pending.binding`, so that it writes after
-    // all the other bindings.
+    // Note: With pending data functionality removed, we no longer need
+    // to handle pending offset calculations.
 
     // Writing the bindings for a parameter block is relatively easy:
     // we just need to allocate the descriptor set(s) needed for this

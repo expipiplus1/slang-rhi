@@ -107,8 +107,7 @@ ShaderObjectLayoutImpl::ShaderObjectLayoutImpl(
         SubObjectRangeInfo subObjectRange;
         subObjectRange.bindingRangeIndex = bindingRangeIndex;
         subObjectRange.layout = subObjectLayout;
-        subObjectRange.pendingOrdinaryDataOffset = 0;
-        subObjectRange.pendingOrdinaryDataStride = 0;
+        // Pending ordinary data fields removed - no longer needed
         m_subObjectRanges.push_back(subObjectRange);
     }
 }

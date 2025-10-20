@@ -70,8 +70,7 @@ struct BindingOffset : SimpleBindingOffset
     // Offsets for "primary" data are stored directly in the `BindingOffset`
     // via the inheritance from `SimpleBindingOffset`.
 
-    /// Offset for any "pending" data
-    SimpleBindingOffset pending;
+    // pending offset removed - no longer needed
 
     /// Create a default (zero) offset
     BindingOffset() {}
@@ -85,8 +84,8 @@ struct BindingOffset : SimpleBindingOffset
     /// Create an offset based on offset information in the given Slang `varLayout`
     BindingOffset(slang::VariableLayoutReflection* varLayout)
         : SimpleBindingOffset(varLayout)
-        , pending(varLayout->getPendingDataLayout())
     {
+        // Pending data layout functionality removed
     }
 
     /// Add any values in the given `offset`
@@ -96,7 +95,7 @@ struct BindingOffset : SimpleBindingOffset
     void operator+=(const BindingOffset& offset)
     {
         SimpleBindingOffset::operator+=(offset);
-        pending += offset.pending;
+        // Pending offset accumulation removed
     }
 };
 
@@ -152,14 +151,10 @@ public:
         SubObjectRangeOffset(slang::VariableLayoutReflection* varLayout)
             : BindingOffset(varLayout)
         {
-            if (auto pendingLayout = varLayout->getPendingDataLayout())
-            {
-                pendingOrdinaryData = (uint32_t)pendingLayout->getOffset(SLANG_PARAMETER_CATEGORY_UNIFORM);
-            }
+            // Pending data layout functionality removed
         }
 
-        /// The offset for "pending" ordinary data related to this range
-        uint32_t pendingOrdinaryData = 0;
+        // pendingOrdinaryData removed - no longer needed
     };
 
     /// Stride information for a sub-object range
@@ -169,14 +164,10 @@ public:
 
         SubObjectRangeStride(slang::TypeLayoutReflection* typeLayout)
         {
-            if (auto pendingLayout = typeLayout->getPendingDataTypeLayout())
-            {
-                pendingOrdinaryData = (uint32_t)pendingLayout->getStride();
-            }
+            // Pending data type layout functionality removed
         }
 
-        /// The stride for "pending" ordinary data related to this range
-        uint32_t pendingOrdinaryData = 0;
+        // pendingOrdinaryData removed - no longer needed
     };
 
     /// Information about a logical binding range as reported by Slang reflection
@@ -384,7 +375,7 @@ public:
     WGPUPipelineLayout m_pipelineLayout = nullptr;
     static_vector<WGPUBindGroupLayout, kMaxDescriptorSets> m_bindGroupLayouts;
 
-    SimpleBindingOffset m_pendingDataOffset;
+    // m_pendingDataOffset removed - pending data functionality no longer needed
     DeviceImpl* m_device = nullptr;
 
     ~RootShaderObjectLayoutImpl();
@@ -424,8 +415,7 @@ protected:
         slang::ProgramLayout* m_programLayout;
         std::vector<EntryPointInfo> m_entryPoints;
 
-        /// Offset to apply to "pending" data from this object, sub-objects, and entry points
-        SimpleBindingOffset m_pendingDataOffset;
+        // m_pendingDataOffset removed - pending data functionality no longer needed
     };
 
     Result _init(const Builder* builder);

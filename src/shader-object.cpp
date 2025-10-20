@@ -645,32 +645,14 @@ Result ShaderObject::writeOrdinaryData(void* destData, Size destSize, ShaderObje
         // layout logic does for complex cases with multiple layers of nested arrays and
         // structures.
         //
-        uint32_t subObjectRangePendingDataOffset = subObjectRangeInfo.pendingOrdinaryDataOffset;
-        uint32_t subObjectRangePendingDataStride = subObjectRangeInfo.pendingOrdinaryDataStride;
-
-        // If the range doesn't actually need/use the "pending" allocation at all, then
-        // we need to detect that case and skip such ranges.
+        // Pending data functionality removed - sub-object ranges no longer contribute
+        // to ordinary data layout since pending data is no longer supported.
+        //
+        // Skip processing that was related to pending data allocation.
         //
         // TODO: This should probably be handled on a per-object basis by caching a "does it
-        // fit?" bit as part of the information for bound sub-objects, given that we already
-        // compute the "does it fit?" status as part of `setObject()`.
+        // All pending data processing removed - no longer needed
         //
-        if (subObjectRangePendingDataOffset == 0)
-            continue;
-
-        for (uint32_t i = 0; i < count; ++i)
-        {
-            ShaderObject* subObject = m_objects[bindingRangeInfo.subObjectIndex + i];
-            ShaderObjectLayout* subObjectLayout = specializedLayout->getSubObjectRangeLayout(subObjectRangeIndex);
-
-            uint64_t subObjectOffset = subObjectRangePendingDataOffset + i * subObjectRangePendingDataStride;
-
-            SLANG_RETURN_ON_FAIL(subObject->writeOrdinaryData(
-                (uint8_t*)destData + subObjectOffset,
-                destSize - subObjectOffset,
-                subObjectLayout
-            ));
-        }
     }
     return SLANG_OK;
 }

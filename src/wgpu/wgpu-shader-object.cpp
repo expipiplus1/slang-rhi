@@ -103,7 +103,7 @@ Result BindingDataBuilder::bindAsRoot(
     m_bindGroupLayouts = specializedLayout->m_bindGroupLayouts;
 
     BindingOffset offset = {};
-    offset.pending = specializedLayout->m_pendingDataOffset;
+    // Pending data offset removed - no longer needed
 
     // Note: the operations here are quite similar to what `bindAsParameterBlock` does.
     // The key difference in practice is that we do *not* make use of the adjustment
@@ -309,15 +309,11 @@ Result BindingDataBuilder::bindAsValue(
             //
             if (subObjectLayout)
             {
-                // Second, the offset where we want to start binding for existential-type
-                // ranges is a bit different, because we don't wnat to bind at the "primary"
-                // offset that got passed down, but instead at the "pending" offset.
+                // With pending data functionality removed, existential-type ranges
+                // are handled the same way as other ranges using primary offsets.
                 //
-                // For the purposes of nested binding, what used to be the pending offset
-                // will now be used as the primary offset.
-                //
-                SimpleBindingOffset objOffset = rangeOffset.pending;
-                SimpleBindingOffset objStride = rangeStride.pending;
+                SimpleBindingOffset objOffset = rangeOffset;
+                SimpleBindingOffset objStride = rangeStride;
                 for (uint32_t i = 0; i < count; ++i)
                 {
                     // An existential-type sub-object is always bound just as a value,
@@ -361,13 +357,8 @@ Result BindingDataBuilder::bindAsParameterBlock(
     offset.bindingSet = (uint32_t)m_entries.size();
     offset.binding = 0;
 
-    // TODO: We should also be writing to `offset.pending` here,
-    // because any resource/sampler bindings related to "pending"
-    // data should *also* be writing into the chosen set.
-    //
-    // The challenge here is that we need to compute the right
-    // value for `offset.pending.binding`, so that it writes after
-    // all the other bindings.
+    // Note: With pending data functionality removed, we no longer need
+    // to handle pending offset calculations.
 
     // Writing the bindings for a parameter block is relatively easy:
     // we just need to allocate the descriptor set(s) needed for this

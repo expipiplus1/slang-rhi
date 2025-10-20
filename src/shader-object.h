@@ -105,8 +105,8 @@ public:
         /// The index of the binding range that corresponds to this sub-object range
         uint32_t bindingRangeIndex;
 
-        uint32_t pendingOrdinaryDataOffset;
-        uint32_t pendingOrdinaryDataStride;
+        // pendingOrdinaryDataOffset and pendingOrdinaryDataStride removed
+        // since pending data layout functionality is no longer supported
     };
 
     struct EntryPointInfo

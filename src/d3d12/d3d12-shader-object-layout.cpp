@@ -27,18 +27,12 @@ inline bool isBindingRangeRootParameter(
 
 ShaderObjectLayoutImpl::SubObjectRangeOffset::SubObjectRangeOffset(slang::VariableLayoutReflection* varLayout)
 {
-    if (auto pendingLayout = varLayout->getPendingDataLayout())
-    {
-        pendingOrdinaryData = (uint32_t)pendingLayout->getOffset(SLANG_PARAMETER_CATEGORY_UNIFORM);
-    }
+    // Pending data layout functionality removed
 }
 
 ShaderObjectLayoutImpl::SubObjectRangeStride::SubObjectRangeStride(slang::TypeLayoutReflection* typeLayout)
 {
-    if (auto pendingLayout = typeLayout->getPendingDataTypeLayout())
-    {
-        pendingOrdinaryData = (uint32_t)pendingLayout->getSize(SLANG_PARAMETER_CATEGORY_UNIFORM);
-    }
+    // Pending data type layout functionality removed
 }
 
 Result ShaderObjectLayoutImpl::createForElementType(
@@ -248,10 +242,8 @@ Result ShaderObjectLayoutImpl::Builder::setElementTypeLayout(slang::TypeLayoutRe
         RefPtr<ShaderObjectLayoutImpl> subObjectLayout;
         if (slangBindingType == slang::BindingType::ExistentialValue)
         {
-            if (auto pendingTypeLayout = slangLeafTypeLayout->getPendingDataTypeLayout())
-            {
-                createForElementType(m_device, m_session, pendingTypeLayout, subObjectLayout.writeRef());
-            }
+            // Existential-type ranges no longer have pending data layout
+            // since pending layout functionality has been removed.
         }
         else
         {
@@ -382,17 +374,8 @@ Result ShaderObjectLayoutImpl::Builder::setElementTypeLayout(slang::TypeLayoutRe
                 //
                 // If this choice ever causes issues, we can revisit the approach here.
 
-                // An interface-type range that includes ordinary data can
-                // increase the size of the ordinary data buffer we need to
-                // allocate for the parent object.
-                //
-                uint32_t ordinaryDataEnd = subObjectRange.offset.pendingOrdinaryData +
-                                           (uint32_t)count * subObjectRange.stride.pendingOrdinaryData;
-
-                if (ordinaryDataEnd > m_totalOrdinaryDataSize)
-                {
-                    m_totalOrdinaryDataSize = ordinaryDataEnd;
-                }
+                // Interface-type ranges no longer contribute to ordinary data size
+                // since pending data layout functionality has been removed.
             }
             break;
         }
@@ -408,8 +391,7 @@ Result ShaderObjectLayoutImpl::Builder::setElementTypeLayout(slang::TypeLayoutRe
         m_totalCounts.sampler += rangeSamplerCount;
         m_childRootParameterCount += rangeRootParamCount;
 
-        subObjectRange.pendingOrdinaryDataOffset = subObjectRange.offset.pendingOrdinaryData;
-        subObjectRange.pendingOrdinaryDataStride = subObjectRange.stride.pendingOrdinaryData;
+        // Pending ordinary data fields removed - no longer needed
 
         m_subObjectRanges.push_back(subObjectRange);
     }
@@ -686,7 +668,7 @@ void RootShaderObjectLayoutImpl::RootSignatureDescBuilder::addAsValue(
     BindingRegisterOffsetPair offset(varLayout);
     auto elementOffset = offset;
     elementOffset.primary.spaceOffset = 0;
-    elementOffset.pending.spaceOffset = 0;
+    // elementOffset.pending removed - pending data functionality no longer needed
     addAsValue(varLayout->getTypeLayout(), physicalDescriptorSetIndex, offset, elementOffset);
 }
 
@@ -792,7 +774,7 @@ void RootShaderObjectLayoutImpl::RootSignatureDescBuilder::addAsValue(
         subObjectRangeElementOffset +=
             BindingRegisterOffsetPair(typeLayout->getSubObjectRangeOffset(subObjectRangeIndex));
         subObjectRangeElementOffset.primary.spaceOffset = inElementOffset.primary.spaceOffset;
-        subObjectRangeElementOffset.pending.spaceOffset = inElementOffset.pending.spaceOffset;
+        // subObjectRangeElementOffset.pending removed - pending data functionality no longer needed
 
         switch (bindingType)
         {
@@ -829,7 +811,7 @@ void RootShaderObjectLayoutImpl::RootSignatureDescBuilder::addAsValue(
 
             BindingRegisterOffsetPair subDescriptorSetOffset;
             subDescriptorSetOffset.primary.spaceOffset = subObjectRangeContainerOffset.primary.spaceOffset;
-            subDescriptorSetOffset.pending.spaceOffset = subObjectRangeContainerOffset.pending.spaceOffset;
+            // subDescriptorSetOffset.pending removed - pending data functionality no longer needed
 
             auto subPhysicalDescriptorSetIndex = addDescriptorSet();
 
@@ -859,14 +841,8 @@ void RootShaderObjectLayoutImpl::RootSignatureDescBuilder::addAsValue(
             // Any nested binding ranges in the sub-object will "leak" into the
             // binding ranges for the surrounding context.
             //
-            auto specializedTypeLayout = subObjectTypeLayout->getPendingDataTypeLayout();
-            if (specializedTypeLayout)
-            {
-                BindingRegisterOffsetPair pendingOffset;
-                pendingOffset.primary = subObjectRangeElementOffset.pending;
-
-                addAsValue(specializedTypeLayout, physicalDescriptorSetIndex, pendingOffset, pendingOffset);
-            }
+            // Specialized type layout handling removed since pending data functionality
+            // has been removed from the system.
             break;
         }
         default:

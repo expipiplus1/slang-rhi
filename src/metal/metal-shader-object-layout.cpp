@@ -13,19 +13,13 @@ static slang::TypeLayoutReflection* _getParameterBlockTypeLayout(
 ShaderObjectLayoutImpl::SubObjectRangeOffset::SubObjectRangeOffset(slang::VariableLayoutReflection* varLayout)
     : BindingOffset(varLayout)
 {
-    if (auto pendingLayout = varLayout->getPendingDataLayout())
-    {
-        pendingOrdinaryData = (uint32_t)pendingLayout->getOffset(SLANG_PARAMETER_CATEGORY_UNIFORM);
-    }
+    // Pending data layout functionality removed
 }
 
 ShaderObjectLayoutImpl::SubObjectRangeStride::SubObjectRangeStride(slang::TypeLayoutReflection* typeLayout)
     : BindingOffset(typeLayout)
 {
-    if (typeLayout->getPendingDataTypeLayout())
-    {
-        pendingOrdinaryData = (uint32_t)typeLayout->getStride();
-    }
+    // Pending data type layout functionality removed
 }
 
 Result ShaderObjectLayoutImpl::Builder::setElementTypeLayout(slang::TypeLayoutReflection* typeLayout)
@@ -196,30 +190,12 @@ Result ShaderObjectLayoutImpl::Builder::setElementTypeLayout(slang::TypeLayoutRe
             // construct a layout if we have static specialization information
             // that tells us what type we expect to find in that range.
             //
-            // The static specialization information is expected to take the
-            // form of a "pending" type layotu attached to the interface type
-            // of the leaf type layout.
-            //
-            if (auto pendingTypeLayout = slangLeafTypeLayout->getPendingDataTypeLayout())
-            {
-                createForElementType(m_device, m_session, pendingTypeLayout, subObjectLayout.writeRef());
-
-                // An interface-type range that includes ordinary data can
-                // increase the size of the ordinary data buffer we need to
-                // allocate for the parent object.
-                //
-                uint32_t ordinaryDataEnd = subObjectRange.offset.pendingOrdinaryData +
-                                           (uint32_t)bindingRange.count * subObjectRange.stride.pendingOrdinaryData;
-
-                if (ordinaryDataEnd > m_totalOrdinaryDataSize)
-                {
-                    m_totalOrdinaryDataSize = ordinaryDataEnd;
-                }
-            }
+            // Interface-typed sub-object ranges no longer contribute to layout
+            // since pending data functionality has been removed.
+            // These ranges are handled through dynamic dispatch at runtime.
         }
         subObjectRange.layout = subObjectLayout;
-        subObjectRange.pendingOrdinaryDataOffset = 0;
-        subObjectRange.pendingOrdinaryDataStride = 0;
+        // Pending ordinary data fields removed - no longer needed
 
         m_subObjectRanges.push_back(subObjectRange);
 
